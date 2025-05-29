@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import { Label } from "../ui/label";
@@ -8,8 +9,13 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 const FormBuilder = () => {
+  const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -36,6 +42,7 @@ const FormBuilder = () => {
       }));
     } else {
       //do toast notification
+      toast.error("Form must have at least one question.");
     }
   };
 
@@ -45,8 +52,30 @@ const FormBuilder = () => {
     setForm({ ...form, questions: updatedQuestions });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    //validate form
+    if (!form.title.trim()) {
+      toast.error("Title is required.");
+      return;
+    }
+
+    const emptyQuestions = form.questions.some((q) => !q.text.trim());
+    if (emptyQuestions) {
+      toast.error("All questions must have text.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      //simulate the delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,10 +137,17 @@ const FormBuilder = () => {
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => {}}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Create Form"}
+        </Button>
       </div>
     </form>
   );
