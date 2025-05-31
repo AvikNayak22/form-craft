@@ -70,9 +70,32 @@ const FormBuilder = () => {
     try {
       setIsSubmitting(true);
 
-      //simulate the delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch("/api/forms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+
+      const data = await response.json();
+
+      toast.success("Form created!", {
+        description: "You can now share your form with others.",
+      });
+
+      router.push(`/dashboard/forms/${data.id}`);
+      router.refresh();
     } catch (error) {
+      console.error("Error saving form:", error);
+      toast.error("Error.", {
+        description: "Something went wrong while saving your form.",
+      });
     } finally {
       setIsSubmitting(false);
     }
