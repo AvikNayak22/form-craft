@@ -1,6 +1,28 @@
-import React from "react";
+import FormList from "@/components/forms/form-list";
+import prisma from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 
-const FormPage = () => {
+const FormPage = async () => {
+  const { userId, redirectToSignIn } = await auth();
+
+  if (!userId) return redirectToSignIn();
+
+  const forms = await prisma.form.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      _count: {
+        select: {
+          responses: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -9,6 +31,7 @@ const FormPage = () => {
       </div>
 
       {/* formlist */}
+      <FormList forms={forms} />
     </div>
   );
 };
