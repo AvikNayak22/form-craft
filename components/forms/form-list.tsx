@@ -24,8 +24,12 @@ type FormListProps = {
 const FormList = ({ forms }: FormListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
 
+  const filteredForms = forms.filter((form) =>
+    form.title.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
   return (
-    <div>
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <Input
           placeholder="Search forms..."
@@ -38,7 +42,7 @@ const FormList = ({ forms }: FormListProps) => {
         </Button>
       </div>
 
-      {forms.length === 0 ? (
+      {filteredForms.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 ">
             No forms found. Create your first form!
