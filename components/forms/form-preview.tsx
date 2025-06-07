@@ -3,20 +3,64 @@
 import { Question } from "@/lib/generated/prisma";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 type FormPreviewProps = {
   form: {
     id: string;
     title: string;
     description: string | null;
-    question: Question[];
+    questions: Question[];
   };
 };
 
 const FormPreview = ({ form }: FormPreviewProps) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [answers, setAnswers] = useState(
+    form.questions.map((q) => ({
+      questionId: q.id,
+      text: "",
+    }))
+  );
+
+  console.log(answers);
+
+  const handleAnswerChange = (questionId: string, text: string) => {
+    setAnswers((prev) => {
+      return prev.map((a) =>
+        a.questionId === questionId ? { ...a, text } : a
+      );
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    //validate required fields
+    const emptyAnswers = answers.some((a) => !a.text.trim());
+    if (emptyAnswers) {
+      toast.error("All questions must be answered");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formId: form.id,
+          answers,
+          respondentName: name,
+          respondentEmail: email,
+        }),
+      });
+    } catch (error) {}
+  };
 
   return (
     <div className="max-w-xl mx-auto">
@@ -27,10 +71,51 @@ const FormPreview = ({ form }: FormPreviewProps) => {
         )}
       </div>
 
-      <form>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <Label>Your Name (Optional)</Label>
-          <Input placeholder="Enter your name" value={name} />
+          <Input
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <div className="space-y-4">
+          <Label>Your Email (Optional)</Label>
+          <Input
+            placeholder="Enter your email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+
+        <div className="space-y-6">
+          {form.questions
+            .sort((a, b) => a.order - b.order)
+            .map((question, index) => (
+              <div key={question.id} className="space-y-2">
+                <Label>
+                  {index + 1}. {question.text}
+                </Label>
+                <Textarea
+                  placeholder="Your answer"
+                  value={
+                    answers.find((a) => a.questionId === question.id)?.text ||
+                    ""
+                  }
+                  onChange={(e) =>
+                    handleAnswerChange(question.id, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+        </div>
+
+        <div className="flex justify-end">
+          <Button type="submit">Submit Response</Button>
         </div>
       </form>
     </div>
