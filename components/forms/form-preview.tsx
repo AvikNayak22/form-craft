@@ -7,6 +7,7 @@ import { FormEvent, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type FormPreviewProps = {
   form: {
@@ -18,6 +19,8 @@ type FormPreviewProps = {
 };
 
 const FormPreview = ({ form }: FormPreviewProps) => {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [answers, setAnswers] = useState(
@@ -59,7 +62,33 @@ const FormPreview = ({ form }: FormPreviewProps) => {
           respondentEmail: email,
         }),
       });
-    } catch (error) {}
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      toast.success("Response Submitted!", {
+        description: "Thank you for completing this form.",
+      });
+
+      //Reset form
+      setAnswers(
+        form.questions.map((q) => ({
+          questionId: q.id,
+          text: "",
+        }))
+      );
+      setName("");
+      setEmail("");
+
+      //Redirect to thank you page or back to home
+      router.push("/");
+    } catch (error) {
+      console.error("Error submitting form: ", error);
+      toast.error("Error", {
+        description: "Something went wrong while submitting the response.",
+      });
+    }
   };
 
   return (

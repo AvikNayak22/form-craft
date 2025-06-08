@@ -15,13 +15,12 @@ datasource db {
 }
 
 model User {
-  id           String         @id
-  email        String         @unique
-  username     String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  forms        Form[]
-  FormResponse FormResponse[]
+  id        String   @id
+  email     String   @unique
+  username  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  forms     Form[]
 }
 
 model Form {
@@ -52,8 +51,6 @@ model FormResponse {
   formId          String
   form            Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   answers         Answer[]
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
   respondentEmail String?
   respondentName  String?
   createdAt       DateTime @default(now())
@@ -64,7 +61,7 @@ model Answer {
   id           String        @id @default(cuid())
   text         String
   questionId   String
-  question     Question?     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  question     Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
   responseId   String
   formResponse FormResponse? @relation(fields: [responseId], references: [id], onDelete: Cascade)
   createdAt    DateTime      @default(now())

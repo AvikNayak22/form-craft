@@ -24,4 +24,16 @@ export async function POST(req: Request) {
   }
 
   //Create form response
+  const formResponse = await prisma.formResponse.create({
+    data: {
+      formId,
+      respondentName,
+      respondentEmail,
+      answers: {
+        create: answers,
+      },
+    },
+  });
+
+  return NextResponse.json(formResponse);
 }
