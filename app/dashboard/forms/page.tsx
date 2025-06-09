@@ -30,7 +30,6 @@ const FormPage = async () => {
         <p className="text-gray-500 mt-1">Create and manage your forms</p>
       </div>
 
-      {/* formlist */}
       <FormList forms={forms} />
     </div>
   );
