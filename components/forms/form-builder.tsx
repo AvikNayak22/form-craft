@@ -11,7 +11,21 @@ import { Button } from "../ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
-const FormBuilder = () => {
+type Question = {
+  id: string;
+  text: string;
+};
+
+type FormBuilderProps = {
+  initialData: {
+    id?: string;
+    title: string;
+    description: string;
+    questions: Question[];
+  };
+};
+
+const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
