@@ -23,6 +23,7 @@ type FormBuilderProps = {
     description: string;
     questions: Question[];
   };
+  isEditing?: boolean;
 };
 
 const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
@@ -31,9 +32,9 @@ const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
-    title: "",
-    description: "",
-    questions: [
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    questions: initialData?.questions || [
       {
         id: "1",
         text: "",
@@ -84,8 +85,11 @@ const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("/api/forms", {
-        method: "POST",
+      const url = isEditing ? `/api/forms/${initialData?.id}` : "/api/forms";
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -99,8 +103,8 @@ const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
 
       const data = await response.json();
 
-      toast.success("Form created!", {
-        description: "You can now share your form with others.",
+      toast.success(isEditing ? "Form Updated!" : "Form created!", {
+        description: "Your form has been saved successfully.",
       });
 
       router.push(`/dashboard/forms/${data.id}`);
@@ -183,7 +187,11 @@ const FormBuilder = ({ initialData, isEditing = false }: FormBuilderProps) => {
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Create Form"}
+          {isSubmitting
+            ? "Saving..."
+            : isEditing
+            ? "Update Form"
+            : "Create Form"}
         </Button>
       </div>
     </form>
